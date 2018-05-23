@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { BrowserRouter as Router, Link, Route, Switch, withRouter, Redirect } from 'react-router-dom';
+import { BrowserRouter as Router, Link, Route, Switch, withRouter, Redirect, Prompt } from 'react-router-dom';
 
 // import stylesheet
 import './scss/styles.scss';
@@ -13,7 +13,8 @@ const state = {
     },
     signout: function(){
         this.signedOut = true;
-    }
+    },
+    preventRedirect: false
 };
 
 // Home (landing) component
@@ -35,8 +36,11 @@ function Contact( props ) {
             <Link to={ `${ props.match.url }/us` }>US Office</Link> &nbsp; &nbsp;
             <Link to={ `${ props.match.url }/india` }>India Office</Link>
 
-            <Route exact path={ props.match.url } render={ () => <h5>Please select an office from above menu.</h5> } />
-            <Route exact path={ `${ props.match.url }/:officeId(us|india)` } component={ Office } />
+            <Switch>
+                <Route exact path={ props.match.url } render={ () => <h5>Please select an office from above menu.</h5> } />
+                <Route exact path={ `${ props.match.url }/:officeId(us|india)` } component={ Office } />
+                <Route render={ () => <Redirect to={ props.match.url } /> } />
+            </Switch>
         </div>
     );
 }
@@ -50,26 +54,58 @@ function Office( props ) {
 
 // admin component
 function Admin( props ) {
-    return state.signedIn ? <h3 style={ {color: 'green'} }>You Are admin now!</h3> : <Redirect to={ {
-        pathname: '/signin',
-        state: {
-            key: 'VALUE'
-        }
-    } } />;
+    return state.signedIn ? (
+        <div>
+            <h3 style={ {color: 'green'} }>You Are admin now!</h3>
+            <button onClick={ () => {
+                state.signedIn = false;
+                props.history.replace('/signin');
+            } }>Sign Out</button>
+        </div>
+    ) : (
+        <Redirect to={ {
+            pathname: '/signin',
+            state: {
+                key: 'VALUE'
+            }
+        } } />
+    );
 }
 
 // sign in component
-function SignIn( props ) {
-    console.log( 'SignIn', props );
+class SignIn extends React.Component {
+    constructor() {
+        super();
 
-    return (
-        <div>
-            <h3>You need to sign in!</h3>
+        this.state = {
+            preventRedirect: false
+        };
+
+        this.manageRedirect = this.manageRedirect.bind( this );
+    }
+
+    manageRedirect( event ) {
+        this.setState({
+            ...this.state,
+            preventRedirect: event.target.value.length > 0
+        });
+    }
+
+    render() {
+        return (
             <div>
-                <SignInButton.WithRouter />
+                <h3>You need to sign in!</h3>
+
+                <Prompt when={ this.state.preventRedirect } message="Are you sure, you want to go somewhere else?"/>
+    
+                <input type="password" onChange={ this.manageRedirect } placeholder="Type a password"/>
+    
+                <div style={ {marginTop: '10px'} }>
+                    <SignInButton.WithRouter />
+                </div>
             </div>
-        </div>
-    );
+        );        
+    }
 }
 
 function SignInButton( props ) {
@@ -81,7 +117,7 @@ function SignInButton( props ) {
             // redirect router to `/admin` url
             props.history.replace('/admin');
         } }>Click to sign in.</button>
-    );    
+    );
 }
 SignInButton.WithRouter = withRouter( SignInButton );
 

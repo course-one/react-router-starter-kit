@@ -4,47 +4,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>User Application</title>
-
-        <style>
-            html,body{
-                margin: 0;
-                padding: 0;
-                font-size: 14px;
-                font-family: sans-serif;
-                color: #111;
-                background-color: #eee;
-
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            }
-        </style>
     </head>
     <body>
         <div id="app"></div>
-
-        <script>
-            document.addEventListener('DOMContentLoaded', function(){
-                var elem = document.getElementById('app');
-
-                let instance = new UserList(elem, [
-                    {firstname: 'Ross', lastname: 'Geller'},
-                    {firstname: 'Monica', lastname: 'Geller'},
-                    {firstname: 'Chandler', lastname: 'Bing'},
-                    {firstname: 'Joey', lastname: 'Tribbiani'},
-                ]);
-
-                // initialize
-                instance.init();
-
-                // add new users
-                setTimeout(function(){
-                    instance.addUser({firstname: 'Rachel', lastname: 'Green'});
-                }, 2000);
-                setTimeout(function(){
-                    instance.addUser({firstname: 'Phoebe', lastname: 'Buffay'});
-                }, 4000);
-            });
-        </script>
-    <script type="text/javascript" src="index.js"></script></body>
+    <script type="text/javascript" src="/index.js"></script></body>
 </html>
