@@ -1,7 +1,2 @@
-# js-plugin-starter
-VanillaJS plugin starter with Webpack
-
-# Instructions
-- git clone this repository
-- `npm install` to install dependencies
-- `npm i -D babel-plugin-react` and `npm i -S react react-dom` to use React.js (also add entry `react` to `.babelrc` presets)
+# React Router v4 sample code
+[https://medium.com/@thatisuday/basics-of-react-router-v4-336d274fd9e0](https://medium.com/@thatisuday/basics-of-react-router-v4-336d274fd9e0)
