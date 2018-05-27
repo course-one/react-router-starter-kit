@@ -1,159 +1,166 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { BrowserRouter as Router, Link, Route, Switch, withRouter, Redirect, Prompt } from 'react-router-dom';
+import { BrowserRouter as Router, NavLink, Route, Switch, Redirect, Prompt } from 'react-router-dom';
 
-// import stylesheet
 import './scss/styles.scss';
 
-// global state
-const state = {
-    signedIn: false,
-    signin: function(){
-        this.signedIn = true;
+// application state
+const AppState = {
+    loggedIn: false,
+    login: function(){
+        this.loggedIn = true;
     },
-    signout: function(){
-        this.signedOut = true;
-    },
-    preventRedirect: false
+    logout: function(){
+        this.loggedIn = false;
+    }
 };
 
-// Home (landing) component
-function Home( props ) {
-    return <h1>Home Component</h1>;
-}
+/*----------------------------------------------*/
 
-// About (us) component
-function About( props ) {
-    return <h1>About Component</h1>;
-}
-
-// Contact (us) component
-function Contact( props ) {
-    return (
-        <div>
-            <h1>Contact Component</h1>
-
-            <Link to={ `${ props.match.url }/us` }>US Office</Link> &nbsp; &nbsp;
-            <Link to={ `${ props.match.url }/india` }>India Office</Link>
-
-            <Switch>
-                <Route exact path={ props.match.url } render={ () => <h5>Please select an office from above menu.</h5> } />
-                <Route exact path={ `${ props.match.url }/:officeId(us|india)` } component={ Office } />
-                <Route render={ () => <Redirect to={ props.match.url } /> } />
-            </Switch>
-        </div>
-    );
-}
-function Office( props ) {
-    return (
-        <div>
-            <h2>I am <abbr>{ props.match.params.officeId.toUpperCase() }</abbr> office</h2>
+// NavLinks to house navigation links
+function NavLinks() {
+    return(
+        <div className="links">
+            <NavLink exact to="/" className="link" activeClassName="active">Home</NavLink>
+            <NavLink to="/about" className="link">About</NavLink>
+            <NavLink to="/contact" className="link">Contact Us</NavLink>
+            <NavLink to="/admin" className="link">Admin</NavLink>
         </div>
     );
 }
 
-// admin component
-function Admin( props ) {
-    return state.signedIn ? (
-        <div>
-            <h3 style={ {color: 'green'} }>You Are admin now!</h3>
-            <button onClick={ () => {
-                state.signedIn = false;
-                props.history.replace('/signin');
-            } }>Sign Out</button>
-        </div>
-    ) : (
-        <Redirect to={ {
-            pathname: '/signin',
-            state: {
-                key: 'VALUE'
-            }
-        } } />
-    );
-}
+/*----------------------------------------------*/
 
-// sign in component
-class SignIn extends React.Component {
-    constructor() {
-        super();
+// views
+const Home = () => <h1>Home Component</h1>;
+const About = ( props ) => <h1>About Component</h1>;
 
-        this.state = {
-            preventRedirect: false
-        };
-
-        this.manageRedirect = this.manageRedirect.bind( this );
+class Admin extends React.Component {
+    constructor( props ) {
+        super( props );
     }
 
-    manageRedirect( event ) {
-        this.setState({
-            ...this.state,
-            preventRedirect: event.target.value.length > 0
-        });
+    logout() {
+        AppState.logout();
+        this.props.history.replace( '/login' );
     }
 
     render() {
         return (
-            <div>
-                <h3>You need to sign in!</h3>
-
-                <Prompt when={ this.state.preventRedirect } message="Are you sure, you want to go somewhere else?"/>
-    
-                <input type="password" onChange={ this.manageRedirect } placeholder="Type a password"/>
-    
-                <div style={ {marginTop: '10px'} }>
-                    <SignInButton.WithRouter />
+            AppState.loggedIn ? (
+                <div>
+                    <h1>Admin Component</h1>
+                    <button onClick={ this.logout.bind(this) }>Logout</button>
                 </div>
-            </div>
-        );        
+            ) : <Redirect to="/login" />
+        );
     }
 }
 
-function SignInButton( props ) {
-    return (
-        <button onClick={ () => {
-            // call sign in function
-            state.signin();
-    
-            // redirect router to `/admin` url
-            props.history.replace('/admin');
-        } }>Click to sign in.</button>
-    );
-}
-SignInButton.WithRouter = withRouter( SignInButton );
+class Login extends React.Component {
+    constructor( props ) {
+        super( props );
 
-// Application component
+        this.state = {
+            password: '',
+            showPromptOnNav: false
+        };
+    }
+
+    savePassword( event ) {
+        this.setState({
+            password: event.target.value,
+            showPromptOnNav: event.target.value.length > 0
+        });
+    }
+
+    handleFormSubmit( event ) {
+        event.preventDefault();
+
+        if( this.state.password == 'password' ) {
+            AppState.login();
+            this.props.history.replace( '/admin' );
+        }
+        else{
+            alert('Password is wrong.');
+        }
+    }
+
+    render() {
+        return (
+            <form onSubmit={ this.handleFormSubmit.bind( this ) }>
+                <h3>Please sign in</h3>
+                
+                <input type="password" 
+                placeholder="Type password" 
+                value={ this.state.password } 
+                onChange={ this.savePassword.bind( this ) }/>
+
+                <button type="submit"> Submit </button>
+
+                <Prompt when={ this.state.showPromptOnNav }
+                message="Are you sure? Your data will be lost."/>
+            </form>
+        );
+    }
+}
+
+const Contact = ( props ) => (
+    <div>        
+        <h1>Contact Component</h1>
+
+        <div className="links">
+            <NavLink to={ `${props.match.url}/india` }
+            className="link">India Office</NavLink>
+
+            <NavLink to={ `${props.match.url}/us` }
+            className="link">Us Office</NavLink>
+        </div>
+
+        <Switch>
+            <Route exact path={ props.match.url }
+            render={ () => <h4>Please select an office.</h4> }/>
+
+            <Route path={ `${props.match.url}/:location(india|us)` }
+            component={ ContactInfo }/>
+            
+            <Route render={ () => <h2>No office found.</h2> }/>
+        </Switch>
+    </div>
+);
+
+const ContactInfo = ( props ) => <h1>Welcome to { props.match.params.location } office.</h1>;
+
+/*----------------------------------------------*/
+
+// application entry component
 class App extends React.Component {
     constructor() {
         super();
     }
 
-    render(){
+    render() {
         return (
-            <div>
-                <Router>
-                    <div>
-                        <div>
-                            <Link to="/">Home</Link> &nbsp; &nbsp;
-                            <Link to="/about">About</Link> &nbsp; &nbsp;
-                            <Link to="/contact">Contact</Link> &nbsp; &nbsp;
-                            <Link to="/admin">Admin Area</Link>
+            <Router>
+                <div>
+                    <NavLinks />
 
-                            <hr/>
-                        </div>
-                        
+                    <div className="views">
                         <Switch>
-                            <Route exact path="/" component={ Home } />
-                            <Route path="/about" component={ About } />
-                            <Route path="/contact" component={ Contact } />
-                            <Route path="/admin" component={ Admin } />
-                            <Route path="/signin" component={ SignIn } />
-                            <Route render={ () => <Redirect to="/"/> } />
+                            <Route exact={ true } path="/" component={ Home }/>
+                            <Route path="/about" component={ About }/>
+                            <Route path="/contact" component={ Contact }/>
+                            <Route path="/admin" component={ Admin }/>
+                            <Route path="/login" component={ Login }/>
+                            <Route render={ () => <h1>404 Error</h1> } />
                         </Switch>
                     </div>
-                </Router>
-            </div>
+                </div>
+            </Router>
         );
     }
 }
 
-ReactDOM.render(<App />, document.getElementById('app'));
+/*******************************************/
+
+ReactDOM.render( <App />, document.getElementById( 'app' ) );

@@ -13,15 +13,25 @@ body{
     font-weight: 300;
 }
 
-a{
-    text-decoration: none;
-    color: #646c7e;
+.links{
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 20px;
 
-    &:hover{
-        opacity: 0.75;
+    .link{
+        color: #333;
+        font-weight: 500;
+        text-decoration: none;
+        text-transform: uppercase;
+        padding: 5px 15px;
+    
+        &:hover{
+            opacity: 0.75;
+        }
+
+        &.active{
+            color: #000;
+            text-decoration: underline;
+        }
     }
-}
-
-hr{
-    opacity: 0.4;
 }
